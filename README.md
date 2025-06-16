@@ -1,3 +1,6 @@
+# CECI EST UN PROJET FAIT DE BASE POUR GITLAB CI/CD
+# MAIS JE L'AI PUBLIE SUR GITHUB POUR QUE LES AUTRES PUISSENT L'UTILISER AUSSI :)
+
 # 🌟 The Ultimate Beginner Cloud Project
 
 > **Un projet complet d'apprentissage du Cloud Computing avec Azure, Docker, et DevOps**
