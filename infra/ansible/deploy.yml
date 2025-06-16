@@ -1,0 +1,322 @@
+---
+- name: "Déploiement complet de l'application PHP sur VMs Ubuntu"
+  hosts: webservers
+  become: yes
+  gather_facts: yes
+
+  vars:
+    # Configuration Docker
+    docker_packages:
+      - docker.io
+      - docker-compose
+    
+    # Configuration application
+    app_directory: /opt/cloudproject
+    compose_file: docker-compose.yml
+    
+    # Image Docker à utiliser (vous pouvez la changer)
+    app_image: "nginx:alpine"  # Temporaire, sera remplacé par votre image custom
+
+  tasks:
+    # =====================================================
+    # ÉTAPE 1: Mise à jour du système
+    # =====================================================
+    - name: "Mise à jour de la liste des paquets"
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: "Mise à niveau de tous les paquets installés"
+      apt:
+        upgrade: dist
+        autoremove: yes
+        autoclean: yes
+
+    # =====================================================
+    # ÉTAPE 2: Installation de Docker
+    # =====================================================
+    - name: "Installation des paquets prérequis"
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+
+    - name: "Ajout de la clé GPG officielle de Docker"
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: "Ajout du dépôt Docker"
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+
+    - name: "Installation de Docker et Docker Compose"
+      apt:
+        name: "{{ docker_packages }}"
+        state: present
+        update_cache: yes
+
+    - name: "Démarrage et activation du service Docker"
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: "Ajout de l'utilisateur au groupe docker"
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    # =====================================================
+    # ÉTAPE 3: Création de la structure de l'application
+    # =====================================================
+    - name: "Création du répertoire de l'application"
+      file:
+        path: "{{ app_directory }}"
+        state: directory
+        mode: '0755'
+
+    - name: "Création du répertoire src"
+      file:
+        path: "{{ app_directory }}/src"
+        state: directory
+        mode: '0755'
+
+    # =====================================================
+    # ÉTAPE 4: Déploiement des fichiers de configuration
+    # =====================================================
+    - name: "Copie du Dockerfile"
+      copy:
+        content: |
+          FROM php:8.0-apache
+          
+          # Installation des extensions PHP nécessaires
+          RUN apt-get update && \
+              apt-get install -y --no-install-recommends \
+                  libcurl4-openssl-dev \
+                  libzip-dev \
+                  vim \
+                  && docker-php-ext-install mysqli curl \
+                  && apt-get clean \
+                  && rm -rf /var/lib/apt/lists/*
+          
+          # Configuration Apache
+          RUN a2enmod rewrite
+          
+          # Copie du code source
+          COPY src/ /var/www/html/
+          
+          # Permissions
+          RUN chown -R www-data:www-data /var/www/html \
+              && chmod -R 755 /var/www/html
+          
+          EXPOSE 80
+        dest: "{{ app_directory }}/Dockerfile"
+        mode: '0644'
+
+    - name: "Création du fichier docker-compose.yml"
+      copy:
+        content: |
+          version: '3.8'
+          
+          services:
+            web:
+              build:
+                context: .
+                dockerfile: Dockerfile
+              container_name: "{{ app_name }}-web"
+              ports:
+                - "{{ app_port }}:80"
+              environment:
+                - DB_SERVER={{ mysql_host }}
+                - DB_USERNAME={{ mysql_user }}
+                - DB_PASSWORD={{ mysql_password }}
+                - DB_NAME={{ mysql_database }}
+              volumes:
+                - ./src:/var/www/html
+              restart: unless-stopped
+              networks:
+                - "{{ docker_network }}"
+          
+          networks:
+            "{{ docker_network }}":
+              driver: bridge
+        dest: "{{ app_directory }}/{{ compose_file }}"
+        mode: '0644'
+
+    # =====================================================
+    # ÉTAPE 5: Déploiement du code source de l'application
+    # =====================================================
+    - name: "Création de la structure src"
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ app_directory }}/src/public"
+        - "{{ app_directory }}/src/includes"
+
+    - name: "Copie du fichier de connexion DB (simplifié sans vraie DB)"
+      copy:
+        content: |
+          <?php
+          // Configuration simplifiée sans vraie base de données
+          define('DB_SERVER', getenv('DB_SERVER') ?: 'localhost');
+          define('DB_USERNAME', getenv('DB_USERNAME') ?: 'user');
+          define('DB_PASSWORD', getenv('DB_PASSWORD') ?: 'password');
+          define('DB_NAME', getenv('DB_NAME') ?: 'mydb');
+
+          function connect_db() {
+              // Pour cette démo simple, on simule une connexion réussie
+              // En production, vous connecteriez ici à votre vraie base de données
+              error_log("Connexion simulée à la base de données: " . DB_SERVER);
+              return true;  // Simulation d'une connexion réussie
+          }
+          ?>
+        dest: "{{ app_directory }}/src/includes/db_connect.php"
+        mode: '0644'
+
+    - name: "Copie du fichier index.php principal (version simplifiée)"
+      copy:
+        content: |
+          <?php
+          // Version simplifiée pour démo sans vraie base de données
+          require_once '../includes/db_connect.php';
+
+          $error_message = null;
+          $messages = [];
+
+          try {
+              $connection = connect_db();
+              
+              // Messages d'exemple (simulation sans vraie DB)
+              $messages = [
+                  [
+                      'id' => 1,
+                      'content' => 'Bienvenue sur notre application PHP déployée avec Ansible !',
+                      'created_at' => date('Y-m-d H:i:s')
+                  ],
+                  [
+                      'id' => 2,
+                      'content' => 'Serveur: ' . gethostname(),
+                      'created_at' => date('Y-m-d H:i:s', strtotime('-1 hour'))
+                  ],
+                  [
+                      'id' => 3,
+                      'content' => 'Variables d\'environnement DB configurées: ' . DB_SERVER,
+                      'created_at' => date('Y-m-d H:i:s', strtotime('-2 hours'))
+                  ]
+              ];
+
+          } catch (Exception $e) {
+              $error_message = $e->getMessage();
+          }
+          ?>
+
+          <!DOCTYPE html>
+          <html lang="fr">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Application Cloud Project</title>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+                  .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                  h1 { color: #333; border-bottom: 3px solid #007bff; padding-bottom: 10px; }
+                  .message { background: #e9f4ff; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; border-radius: 4px; }
+                  .error { background: #ffe6e6; border-left: 4px solid #dc3545; color: #721c24; }
+                  .info { background: #e8f5e8; border-left: 4px solid #28a745; padding: 10px; margin: 10px 0; }
+                  .server-info { font-size: 0.9em; color: #666; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>🚀 Cloud Project - Application PHP</h1>
+                  
+                  <div class="info">
+                      <strong>✅ Application déployée avec succès via Ansible !</strong>
+                  </div>
+                  
+                  <div class="server-info">
+                      <p><strong>Serveur:</strong> <?= htmlspecialchars(gethostname()) ?></p>
+                      <p><strong>Date/Heure:</strong> <?= date('Y-m-d H:i:s') ?></p>
+                      <p><strong>Configuration DB:</strong> <?= htmlspecialchars(DB_SERVER) ?></p>
+                  </div>
+
+                  <?php if ($error_message): ?>
+                      <div class="message error">
+                          <strong>Erreur:</strong> <?= htmlspecialchars($error_message) ?>
+                      </div>
+                  <?php else: ?>
+                      <h2>📋 Messages de démonstration</h2>
+                      <?php if (empty($messages)): ?>
+                          <div class="message">
+                              <em>Aucun message à afficher pour le moment.</em>
+                          </div>
+                      <?php else: ?>
+                          <?php foreach ($messages as $msg): ?>
+                              <div class="message">
+                                  <strong>Message #<?= htmlspecialchars($msg['id']) ?>:</strong><br>
+                                  <?= htmlspecialchars($msg['content']) ?><br>
+                                  <small><em>Créé le: <?= htmlspecialchars($msg['created_at']) ?></em></small>
+                              </div>
+                          <?php endforeach; ?>
+                      <?php endif; ?>
+                  <?php endif; ?>
+              </div>
+          </body>
+          </html>
+        dest: "{{ app_directory }}/src/public/index.php"
+        mode: '0644'
+
+    # =====================================================
+    # ÉTAPE 6: Pull de l'image et déploiement
+    # =====================================================
+    - name: "Arrêt des anciens conteneurs s'ils existent"
+      shell: "cd {{ app_directory }} && docker-compose down"
+      ignore_errors: yes
+
+    - name: "Construction et démarrage de l'application"
+      shell: "cd {{ app_directory }} && docker-compose up -d --build"
+      register: compose_result
+
+    - name: "Vérification du statut des conteneurs"
+      shell: "docker ps --filter name={{ app_name }}"
+      register: container_status
+
+    - name: "Affichage du statut"
+      debug:
+        msg: 
+          - "Résultat du déploiement: {{ compose_result.stdout }}"
+          - "Conteneurs actifs: {{ container_status.stdout }}"
+
+    # =====================================================
+    # ÉTAPE 7: Vérifications finales
+    # =====================================================
+    - name: "Test de connectivité sur le port {{ app_port }}"
+      wait_for:
+        port: "{{ app_port }}"
+        host: "{{ ansible_default_ipv4.address }}"
+        delay: 10
+        timeout: 60
+      register: port_check
+
+    - name: "Affichage des informations de déploiement"
+      debug:
+        msg:
+          - "✅ Déploiement terminé avec succès !"
+          - "🌐 Application accessible sur: http://{{ ansible_default_ipv4.address }}:{{ app_port }}"
+          - "📁 Répertoire de l'application: {{ app_directory }}"
+          - "🐳 Conteneur: {{ app_name }}-web"
+
+  handlers:
+    - name: "Redémarrage de Docker"
+      systemd:
+        name: docker
+        state: restarted

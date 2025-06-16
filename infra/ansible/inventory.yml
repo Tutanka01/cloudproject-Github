@@ -1,0 +1,24 @@
+---
+# Inventaire des serveurs à gérer
+all:
+  children:
+    webservers:
+      hosts:
+        web-vm-1:
+          ansible_host: 10.0.1.4  # IP privée de votre VM dans le subnet privé
+          ansible_user: azureuser
+          ansible_ssh_private_key_file: ~/.ssh/azure_vm_key
+        web-vm-2:
+          ansible_host: 10.0.2.4  # IP privée de votre seconde VM
+          ansible_user: azureuser
+          ansible_ssh_private_key_file: ~/.ssh/azure_vm_key
+      vars:
+        # Variables communes aux serveurs web
+        app_port: 8080
+        app_name: cloudproject-php
+        docker_network: cloudproject_network
+        # Variables d'environnement pour l'application (pas de vraie DB)
+        mysql_host: localhost
+        mysql_database: myapp
+        mysql_user: appuser
+        mysql_password: securepassword123

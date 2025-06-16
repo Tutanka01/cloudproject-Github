@@ -1,0 +1,22 @@
+services:
+  web:
+    build:
+      context: .  # Path to the directory containing the Dockerfile
+      dockerfile: Dockerfile  # Name of your Dockerfile (optional if named "Dockerfile")
+    container_name: web-php
+    ports:
+      - "8080:80"  # Map host port 80 to container port 80
+    depends_on:
+      - db
+    environment:
+      DB_SERVER: ${DB_SERVER}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+
+    volumes:
+      - ./src:/var/www/html  # Mount your application code
+
+volumes:
+  db_data:
+    driver: local

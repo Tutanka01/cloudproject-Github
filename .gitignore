@@ -1,0 +1,57 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+.terraform.lock.hcl
+
+# Ansible
+*.retry
+ansible/vault_password_file
+ansible/*.vault
+ansible/inventories/*
+!ansible/inventories/example_hosts
+ansible/roles/*/vault.yml
+
+# Secrets & Credentials
+*.pem
+*.key
+*.crt
+*id_rsa*
+*.pub
+*.ppk
+*.env
+*.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*secrets*
+*secret*
+*credentials*
+*credential*
+*password*
+.aws/
+.kube/
+*kubeconfig*
+
+# Logs
+*.log
+logs/
+
+# Local development
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+*.terraform

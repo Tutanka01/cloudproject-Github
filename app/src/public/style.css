@@ -1,0 +1,675 @@
+/* Styles de base */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Titres */
+h1 {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2.5em;
+    font-weight: 300;
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 15px;
+}
+
+h2 {
+    color: #34495e;
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    font-weight: 400;
+}
+
+/* Messages de statut */
+.success-message {
+    color: #155724;
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    border: 1px solid #c3e6cb;
+    padding: 15px 20px;
+    margin-bottom: 25px;
+    border-radius: 10px;
+    border-left: 5px solid #28a745;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.error-message {
+    color: #721c24;
+    background: linear-gradient(135deg, #f8d7da, #f1aeb5);
+    border: 1px solid #f5c6cb;
+    padding: 15px 20px;
+    margin-bottom: 25px;
+    border-radius: 10px;
+    border-left: 5px solid #dc3545;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.blocked-message {
+    color: #856404;
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    border: 1px solid #ffeeba;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 10px;
+    text-align: center;
+    border-left: 5px solid #ffc107;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Formulaire */
+.form-container {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1.1em;
+}
+
+.form-group textarea {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
+    font-size: 16px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 120px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+    background-color: #fafbfc;
+}
+
+.char-counter {
+    text-align: right;
+    margin-top: 5px;
+    font-size: 0.9em;
+    color: #6c757d;
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.submit-btn:hover {
+    background: linear-gradient(135deg, #2980b9, #1abc9c);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.6);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(52, 152, 219, 0.4);
+}
+
+/* Section des messages */
+.messages-section {
+    background: rgba(255, 255, 255, 0.6);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Liste des messages */
+.messages-list ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.messages-list li {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    border-left: 4px solid #3498db;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.messages-list li:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.message-content p {
+    margin: 0 0 10px 0;
+    word-wrap: break-word;
+    line-height: 1.6;
+    font-size: 1.1em;
+    color: #2c3e50;
+}
+
+.message-meta {
+    border-top: 1px solid #dee2e6;
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+.message-meta small {
+    font-size: 0.85em;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.no-messages {
+    color: #856404;
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    border: 1px solid #ffeeba;
+    padding: 25px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 1.1em;
+    font-weight: 500;
+    border-left: 4px solid #ffc107;
+}
+
+/* Contrôles temps réel */
+.messages-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.realtime-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.realtime-status {
+    font-size: 0.9em;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.realtime-status.active {
+    background: rgba(40, 167, 69, 0.15);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.realtime-status.paused {
+    background: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.875em;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    min-width: 80px;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+/* Animation pour nouveaux messages */
+.message-item {
+    transition: all 0.3s ease;
+}
+
+.messages-list li.new-message {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.15), rgba(40, 167, 69, 0.05)) !important;
+    border-left: 4px solid #28a745 !important;
+    animation: highlight-new 3s ease-out;
+    box-shadow: 0 6px 15px rgba(40, 167, 69, 0.2) !important;
+}
+
+@keyframes highlight-new {
+    0% {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.3), rgba(40, 167, 69, 0.1));
+        transform: scale(1.02);
+        box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+    }
+    50% {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.2), rgba(40, 167, 69, 0.08));
+        transform: scale(1.01);
+    }
+    100% {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.15), rgba(40, 167, 69, 0.05));
+        transform: scale(1);
+        box-shadow: 0 6px 15px rgba(40, 167, 69, 0.2);
+    }
+}
+
+/* ========== STYLES PAGINATION ========== */
+
+/* Contrôles de pagination dans le header */
+.messages-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagination-controls label {
+    font-size: 0.9em;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.pagination-controls select {
+    padding: 8px 12px;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    background: white;
+    color: #495057;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pagination-controls select:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.pagination-controls select:hover {
+    border-color: #adb5bd;
+}
+
+/* Info de pagination */
+.pagination-info {
+    background: rgba(52, 152, 219, 0.1);
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #3498db;
+}
+
+.pagination-info p {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 0.95em;
+    font-weight: 500;
+}
+
+/* Wrapper de pagination */
+.pagination-wrapper {
+    margin-top: 30px;
+    padding: 20px 0;
+    border-top: 2px solid #e9ecef;
+}
+
+/* Navigation de pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    padding: 10px 15px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    color: #495057;
+    text-decoration: none;
+    border-radius: 8px;
+    border: 2px solid #dee2e6;
+    font-weight: 500;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+    min-width: 45px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.pagination-btn:hover {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border-color: #3498db;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.pagination-btn.current {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border-color: #3498db;
+    cursor: default;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+.pagination-btn.current:hover {
+    transform: translateY(-1px);
+}
+
+.pagination-btn.first,
+.pagination-btn.last {
+    background: linear-gradient(135deg, #28a745, #218838);
+    color: white;
+    border-color: #28a745;
+}
+
+.pagination-btn.first:hover,
+.pagination-btn.last:hover {
+    background: linear-gradient(135deg, #218838, #1e7e34);
+    border-color: #1e7e34;
+}
+
+.pagination-btn.prev,
+.pagination-btn.next {
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+    color: white;
+    border-color: #6c757d;
+}
+
+.pagination-btn.prev:hover,
+.pagination-btn.next:hover {
+    background: linear-gradient(135deg, #5a6268, #495057);
+    border-color: #495057;
+}
+
+/* Ellipses pour la pagination */
+.pagination-ellipsis {
+    padding: 10px 8px;
+    color: #6c757d;
+    font-weight: 500;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+}
+
+/* Responsive amélioré pour la pagination */
+@media (max-width: 768px) {
+    .pagination {
+        gap: 4px;
+    }
+    
+    .pagination-btn {
+        padding: 8px 10px;
+        font-size: 0.8em;
+        min-width: 35px;
+    }
+    
+    .pagination-btn.first,
+    .pagination-btn.last,
+    .pagination-btn.prev,
+    .pagination-btn.next {
+        font-size: 0.7em;
+        padding: 8px 8px;
+    }
+    
+    .quick-jump {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+    
+    .quick-jump input {
+        width: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .pagination {
+        justify-content: center;
+        gap: 2px;
+    }
+    
+    .pagination-btn {
+        padding: 6px 8px;
+        font-size: 0.75em;
+        min-width: 30px;
+    }
+    
+    .pagination-btn.first,
+    .pagination-btn.last {
+        display: none; /* Masquer sur très petits écrans */
+    }
+    
+    .messages-header {
+        text-align: center;
+    }
+    
+    .pagination-controls {
+        flex-direction: column;
+        gap: 5px;
+    }
+}
+
+/* Animation pour les changements de page */
+.messages-list {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* États de chargement pour la pagination */
+.pagination-loading .pagination-btn {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.pagination-loading .pagination-btn:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: loading-slide 1.5s infinite;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Sécurité visuelle */
+.csrf-token {
+    display: none !important;
+}
+
+/* Indicateur de statut de sécurité */
+.security-status {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: rgba(40, 167, 69, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.security-status small {
+    color: #155724;
+    font-weight: 500;
+}
+
+/* Styles pour les erreurs de validation */
+.form-group textarea.error {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 10px rgba(220, 53, 69, 0.3) !important;
+}
+
+/* Indicateur de sécurité */
+.security-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #28a745;
+    border-radius: 50%;
+    margin-right: 5px;
+    animation: pulse 2s infinite;
+}
+
+/* Bouton désactivé */
+.submit-btn:disabled {
+    background: #6c757d !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+/* Toast notifications */
+.toast {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+}
+
+/* Amélioration de l'accessibilité */
+.form-group textarea:focus,
+.submit-btn:focus {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
+}
+
+/* Animation de chargement pour le bouton */
+.submit-btn.loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.submit-btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: loading-slide 1.5s infinite;
+}
+
+@keyframes loading-slide {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+
+/* Indicateur de chargement pour temps réel */
+.realtime-loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.realtime-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #28a745, transparent);
+    animation: realtime-loading 1.5s infinite;
+}
+
+@keyframes realtime-loading {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}

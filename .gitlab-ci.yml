@@ -1,0 +1,168 @@
+# SAST (Static Application Security Testing) il va analyser le code pour détecter les vulnérabilités c'est le stage "test"
+include:
+  - template: Security/SAST.gitlab-ci.yml
+
+stages:
+  - secret-scan
+  - test
+  - build
+  - deploy
+
+variables:
+  APP_IMAGE: registry.gitlab.com/cloudproject1630122/cloudproject
+  APP_TAG: latest
+  BASTION_HOST: "4.211.107.184"
+  PUBLIC_1: "10.0.1.5"
+  PUBLIC_2: "10.0.1.8"
+  DB_NAME: "multizone-db-app-az1-dev"
+
+# Scan de secrets, il va genérer un rapport dans le job, il faut aller le voir mannuellement
+secret_scan:
+  stage: secret-scan
+  image: 
+    name: zricethezav/gitleaks:latest
+    entrypoint: [""]
+  before_script:
+    - echo "Scan des secrets avec Gitleaks..."
+  script:
+    - /usr/bin/gitleaks detect --source . --verbose --redact || echo "Des secrets ont été détectés - Validation manuelle requise"
+  after_script:
+    - echo "Scan terminé - En attente de validation"
+  allow_failure: true
+  # when: manual - to allow manual intervention
+  only:
+    - merge_requests
+    - branches
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - echo "Logging into Docker registry..."
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - echo "Building Docker image..."
+    - docker build -t $APP_IMAGE:$APP_TAG .
+    - echo "Push Docker image to registry..."
+    - docker push $APP_IMAGE:$APP_TAG
+
+deploy:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client
+    - chmod 600 $SSK_KEY
+  script:
+    - |      
+      # ÉTAPE 1: Création du script de déploiement avec décodage Base64
+      cat > deploy_script.sh << 'EOF'
+      #!/bin/sh
+      set -e  # Arrêter en cas d'erreur
+     
+      SERVER=$1
+      IMAGE=$2
+      TAG=$3
+      SQL_SERVER=$4
+      SQL_PASSWORD_B64=$5  # Mot de passe encodé en Base64
+      SQL_USER=$6
+      DB_NAME=$7
+     
+      echo "=== Début du déploiement sur $SERVER ==="
+     
+      # Vérifier que Docker fonctionne
+      if ! docker info > /dev/null 2>&1; then
+        echo "ERREUR: Docker n'est pas accessible. Vérifiez les permissions."
+        exit 1
+      fi
+
+      # Décodage du mot de passe Base64
+      echo "Décodage du mot de passe..."
+      SQL_PASSWORD=$(echo "$SQL_PASSWORD_B64" | base64 -d)
+      PASSWORD_LENGTH=$(echo -n "$SQL_PASSWORD" | wc -c)
+      echo "Mot de passe décodé: $PASSWORD_LENGTH caractères"
+     
+      # Pull de l'image
+      echo "Téléchargement de l'image $IMAGE:$TAG..."
+      docker pull $IMAGE:$TAG
+      if [ $? -ne 0 ]; then
+        echo "ERREUR: Échec du téléchargement de l'image"
+        exit 1
+      fi
+     
+      # Arrêt du conteneur existant
+      echo "Arrêt du conteneur existant..."
+      docker rm -f web-php 2>/dev/null || true
+     
+      # Création du fichier .env avec les variables d'environnement
+      echo "Création du fichier .env..."
+      cat > /tmp/app.env << ENVEOF
+      SQL_SERVER=$SQL_SERVER
+      SQL_PASSWORD=$SQL_PASSWORD
+      SQL_USER=$SQL_USER
+      DB_NAME=$DB_NAME
+      ENVEOF
+     
+      # Vérification du contenu du fichier .env (sans afficher le mot de passe)
+      echo "Variables d'environnement configurées:"
+      echo "SQL_SERVER: $SQL_SERVER"
+      echo "SQL_USER: $SQL_USER"
+      echo "DB_NAME: $DB_NAME"
+      echo "SQL_PASSWORD: [MASQUÉ - $PASSWORD_LENGTH caractères]"
+     
+      # Démarrage du nouveau conteneur avec le fichier .env
+      echo "Démarrage du nouveau conteneur avec fichier .env..."
+      docker run -d --name web-php -p 80:80 \
+        --env-file /tmp/app.env \
+        $IMAGE:$TAG
+      
+      if [ $? -eq 0 ]; then
+        echo "=== Déploiement réussi sur $SERVER ==="
+        # Nettoyage du fichier .env pour la sécurité
+        rm -f /tmp/app.env
+        echo "Fichier .env nettoyé pour la sécurité"
+        
+        # Test rapide du conteneur
+        echo "Vérification que le conteneur fonctionne..."
+        sleep 2
+        if docker ps | grep -q web-php; then
+          echo "✓ Conteneur web-php en cours d'exécution"
+        else
+          echo "⚠ Le conteneur ne semble pas fonctionner"
+          docker logs web-php --tail 10
+        fi
+      else
+        echo "ERREUR: Échec du démarrage du conteneur"
+        # Nettoyage même en cas d'erreur
+        rm -f /tmp/app.env
+        exit 1
+      fi
+      EOF
+     
+      chmod +x deploy_script.sh
+     
+      # ÉTAPE 2: Déploiement sur le serveur PUBLIC_1
+      echo "=== Déploiement sur le serveur PUBLIC_1 ($PUBLIC_1) ==="
+      scp -o StrictHostKeyChecking=no -i $SSK_KEY deploy_script.sh azureuser@$BASTION_HOST:/tmp/
+      ssh -o StrictHostKeyChecking=no -i $SSK_KEY azureuser@$BASTION_HOST \
+        "scp -o StrictHostKeyChecking=no /tmp/deploy_script.sh azureuser@$PUBLIC_1:/tmp/ && \
+         ssh -o StrictHostKeyChecking=no azureuser@$PUBLIC_1 \
+         \"chmod +x /tmp/deploy_script.sh && \
+           /tmp/deploy_script.sh '$PUBLIC_1' '${APP_IMAGE}' '${APP_TAG}' '${SQL_SERVER}' '${SQL_PASSWORD_B64}' '${SQL_USER}' '${DB_NAME}'\""
+     
+      # ÉTAPE 3: Déploiement sur le serveur PUBLIC_2
+      echo "=== Déploiement sur le serveur PUBLIC_2 ($PUBLIC_2) ==="
+      ssh -o StrictHostKeyChecking=no -i $SSK_KEY azureuser@$BASTION_HOST \
+        "scp -o StrictHostKeyChecking=no /tmp/deploy_script.sh azureuser@$PUBLIC_2:/tmp/ && \
+         ssh -o StrictHostKeyChecking=no azureuser@$PUBLIC_2 \
+         \"chmod +x /tmp/deploy_script.sh && \
+           /tmp/deploy_script.sh '$PUBLIC_2' '${APP_IMAGE}' '${APP_TAG}' '${SQL_SERVER}' '${SQL_PASSWORD_B64}' '${SQL_USER}' '${DB_NAME}'\""
+     
+      echo "=== Déploiement terminé sur tous les serveurs ==="
+      
+      # Nettoyage local
+      rm -f deploy_script.sh
+      echo "Script de déploiement nettoyé localement"
